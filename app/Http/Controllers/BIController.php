@@ -170,22 +170,33 @@ class BIController extends Controller
         $produto = $request->query('produto');
         $companyGroupId = auth()->user()->company_group;
 
+        // Definir datas de filtro, usando valores do request ou padrão (últimos 3 meses)
+        $inicio = $request->filled('inicio') 
+            ? $request->inicio 
+            : now()->subMonths(3)->startOfMonth()->toDateString();
+
+        $fim = $request->filled('fim') 
+            ? $request->fim 
+            : now()->endOfMonth()->toDateString();
+
         // Buscar pagantes do grupo para filtrar vendas
         $pagantesDoGrupo = DB::table('company_group_venda')
             ->where('company_group_id', $companyGroupId)
             ->pluck('pagante');
 
-        // Buscar valor total do produto
+        // Buscar valor total do produto no período e pagantes do grupo
         $valorTotalProduto = DB::table('vendas')
             ->where('produto', $produto)
             ->whereIn('pagante', $pagantesDoGrupo)
+            ->whereDate('data_venda', '>=', $inicio)
+            ->whereDate('data_venda', '<=', $fim)
             ->sum('valor_total');
 
         $html = "<h6>Produto: <strong>{$produto}</strong></h6>";
         $html .= "<p>Total Geral: <strong>R$ " . number_format($valorTotalProduto, 2, ',', '.') . "</strong></p>";
 
         if ($produto === 'Diárias de Hospedagem') {
-            // Agrupar por cidade, somando diárias
+            // Agrupar por cidade, somando diárias e valor
             $dados = DB::table('vendas')
                 ->select('cidade_fornecedor',
                     DB::raw('SUM(diarias) as quantidade_total'),
@@ -193,6 +204,8 @@ class BIController extends Controller
                 )
                 ->where('produto', $produto)
                 ->whereIn('pagante', $pagantesDoGrupo)
+                ->whereDate('data_venda', '>=', $inicio)
+                ->whereDate('data_venda', '<=', $fim)
                 ->groupBy('cidade_fornecedor')
                 ->orderBy(DB::raw('SUM(diarias)'), 'desc')
                 ->get();
@@ -219,9 +232,8 @@ class BIController extends Controller
                 $html .= "<td>" . number_format($percentual, 1, ',', '.') . "%</td>";
                 $html .= "</tr>";
             }
-
         } elseif ($produto === 'Aluguel de Carro') {
-            // Agrupar por fornecedor, somando diárias
+            // Agrupar por fornecedor, somando diárias e valor
             $dados = DB::table('vendas')
                 ->select('fornecedor',
                     DB::raw('SUM(diarias) as quantidade_total'),
@@ -229,6 +241,8 @@ class BIController extends Controller
                 )
                 ->where('produto', $produto)
                 ->whereIn('pagante', $pagantesDoGrupo)
+                ->whereDate('data_venda', '>=', $inicio)
+                ->whereDate('data_venda', '<=', $fim)
                 ->groupBy('fornecedor')
                 ->orderBy(DB::raw('SUM(diarias)'), 'desc')
                 ->get();
@@ -255,18 +269,18 @@ class BIController extends Controller
                 $html .= "<td>" . number_format($percentual, 1, ',', '.') . "%</td>";
                 $html .= "</tr>";
             }
-
         } else {
-            // Qualquer outro produto: agrupar por fornecedor, somando quantidade
+            // Para outros produtos: contar processos únicos (venda_numero) por fornecedor
             $dados = DB::table('vendas')
-                ->select('fornecedor',
-                    DB::raw('SUM(quantidade) as quantidade_total'),
-                    DB::raw('SUM(valor_total) as valor_total')
-                )
+                ->select('fornecedor', 
+                    DB::raw('COUNT(*) as quantidade_total'), 
+                    DB::raw('SUM(valor_total) as valor_total'))
                 ->where('produto', $produto)
                 ->whereIn('pagante', $pagantesDoGrupo)
+                ->when($inicio, fn($q) => $q->whereDate('data_venda', '>=', $inicio))
+                ->when($fim, fn($q) => $q->whereDate('data_venda', '<=', $fim))
                 ->groupBy('fornecedor')
-                ->orderBy(DB::raw('SUM(valor_total)'), 'desc')
+                ->orderBy('valor_total', 'desc')
                 ->get();
 
             $html .= "<div class='table-responsive'>";
@@ -293,9 +307,9 @@ class BIController extends Controller
             }
         }
 
-
         $html .= "</tbody></table></div>";
 
         return response()->json(['html' => $html]);
     }
+
 }
