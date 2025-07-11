@@ -140,22 +140,21 @@
             </div>
         </div>
     </div>
-
-        {{-- Insight Automático --}}
-        <div class="card border-start border-4 border-primary shadow-sm mb-4">
-            <div class="card-body">
-                <h5 class="card-title">
-                    <i class="fas fa-lightbulb text-warning"></i> Insight de Evolução
-                </h5>
-                <p class="card-text">
-                    @if (!empty($insightAnoComparativo))
-                        {{ $insightAnoComparativo }}
-                    @else
-                        Os dados dos últimos anos mostram uma evolução consistente. Continue monitorando os principais clientes e incentive os centros de custo com maior potencial.
-                    @endif
-                </p>
-            </div>
+    {{-- Insight Automático Últimos 4 anos --}}
+    <div class="card border-start border-4 border-primary shadow-sm mb-4">
+        <div class="card-body">
+            <h5 class="card-title">
+                <i class="fas fa-lightbulb text-warning"></i> Insight de Evolução
+            </h5>
+            <p class="card-text">
+                @if (!empty($insightAnoComparativo))
+                    {{ $insightAnoComparativo }}
+                @else
+                    Os dados dos últimos anos mostram uma evolução consistente. Continue monitorando os principais clientes e incentive os centros de custo com maior potencial.
+                @endif
+            </p>
         </div>
+    </div>
 
 
     {{-- Indicadores por Produto --}}
@@ -273,8 +272,9 @@
                             <th class="text-nowrap">Pagante</th>
                             <th class="text-nowrap">Produto</th>
                             <th class="text-nowrap">Fornecedor</th>
-                            <th class="text-nowrap">Saida</th>
-                            <th class="text-nowrap">Retorno</th>
+                            <th class="text-nowrap">Início</th>
+                            <th class="text-nowrap">Fim</th>
+                            <th class="text-nowrap">Passageiros</th>
                             <th class="text-nowrap">Solicitante</th>
                             <th class="text-nowrap">Valor R$</th>
                         </tr>
@@ -289,12 +289,13 @@
                                 <td class="text-nowrap">{{ $venda->fornecedor }}</td>
                                 <td class="text-nowrap">{{ \Carbon\Carbon::parse($venda->data_inicio)->format('d/m/Y') }}</td>
                                 <td class="text-nowrap">{{ \Carbon\Carbon::parse($venda->data_fim)->format('d/m/Y') }}</td>
+                                <td class="text-end">{{ $venda->passageiros ?? '-' }}</td>
                                 <td class="text-end">{{ $venda->solicitante ?? '-' }}</td>
                                 <td class="text-end">{{ number_format($venda->valor_total ?? 0, 2, ',', '.') }}</td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6" class="text-center text-muted">Nenhuma venda encontrada.</td>
+                                <td colspan="10" class="text-center text-muted">Nenhuma venda encontrada.</td>
                             </tr>
                         @endforelse
                     </tbody>

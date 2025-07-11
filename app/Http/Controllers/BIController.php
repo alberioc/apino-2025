@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon as CarbonDate;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class BIController extends Controller
 {
@@ -91,28 +92,7 @@ class BIController extends Controller
         pois ela já é a parceira estratégica do grupo. Sempre enfatize a parceria com a Apino Turismo\n\n";
         $prompt .= json_encode($anosComparativo, JSON_PRETTY_PRINT);
 
-        $insightAnoComparativo = null;
-
-        try {
-            $resposta = Http::withToken(env('OPENAI_API_KEY'))->post('https://api.openai.com/v1/chat/completions', [
-                'model' => 'gpt-4o',
-                'messages' => [
-                    [
-                        'role' => 'system',
-                        'content' => 'Você é um analista de dados financeiros.'
-                    ],
-                    [
-                        'role' => 'user',
-                        'content' => $prompt
-                    ]
-                ],
-            ]);
-
-            $insightAnoComparativo = $resposta->json('choices.0.message.content') ?? null;
-        } catch (\Exception $e) {
-            \Log::error('Erro ao gerar insight OpenAI: ' . $e->getMessage());
-            $insightAnoComparativo = 'Não foi possível gerar o insight no momento.';
-        }
+        $insightAnoComparativo = gerarInsightOpenAI($prompt);        
 
         // Agrupar por produto
         $produtosData = $vendas->groupBy('produto')->map(function ($produtosGroup) {
@@ -205,7 +185,7 @@ class BIController extends Controller
         $html .= "<p>Total Geral: <strong>R$ " . number_format($valorTotalProduto, 2, ',', '.') . "</strong></p>";
 
         if ($produto === 'Diárias de Hospedagem') {
-            // Para diárias, somar diárias e valor_total por cidade
+            // Agrupar por cidade, somando diárias
             $dados = DB::table('vendas')
                 ->select('cidade_fornecedor',
                     DB::raw('SUM(diarias) as quantidade_total'),
@@ -240,8 +220,44 @@ class BIController extends Controller
                 $html .= "</tr>";
             }
 
+        } elseif ($produto === 'Aluguel de Carro') {
+            // Agrupar por fornecedor, somando diárias
+            $dados = DB::table('vendas')
+                ->select('fornecedor',
+                    DB::raw('SUM(diarias) as quantidade_total'),
+                    DB::raw('SUM(valor_total) as valor_total')
+                )
+                ->where('produto', $produto)
+                ->whereIn('pagante', $pagantesDoGrupo)
+                ->groupBy('fornecedor')
+                ->orderBy(DB::raw('SUM(diarias)'), 'desc')
+                ->get();
+
+            $html .= "<div class='table-responsive'>";
+            $html .= "<table id='tabelaDetalhesProduto' class='table table-sm table-bordered table-hover table-striped align-middle small'>";
+            $html .= "<thead><tr>
+                        <th>Fornecedor</th>
+                        <th>Quantidade de Diárias</th>
+                        <th>Valor Total (R$)</th>
+                        <th>Diária Média (R$)</th>
+                        <th>% do Total</th>
+                    </tr></thead><tbody>";
+
+            foreach ($dados as $item) {
+                $ticketMedio = $item->quantidade_total > 0 ? $item->valor_total / $item->quantidade_total : 0;
+                $percentual = $valorTotalProduto > 0 ? ($item->valor_total / $valorTotalProduto) * 100 : 0;
+
+                $html .= "<tr>";
+                $html .= "<td>{$item->fornecedor}</td>";
+                $html .= "<td>{$item->quantidade_total}</td>";
+                $html .= "<td>" . number_format($item->valor_total, 2, ',', '.') . "</td>";
+                $html .= "<td>" . number_format($ticketMedio, 2, ',', '.') . "</td>";
+                $html .= "<td>" . number_format($percentual, 1, ',', '.') . "%</td>";
+                $html .= "</tr>";
+            }
+
         } else {
-            // Para os demais produtos, somar quantidade e valor_total por fornecedor
+            // Qualquer outro produto: agrupar por fornecedor, somando quantidade
             $dados = DB::table('vendas')
                 ->select('fornecedor',
                     DB::raw('SUM(quantidade) as quantidade_total'),
@@ -257,7 +273,7 @@ class BIController extends Controller
             $html .= "<table id='tabelaDetalhesProduto' class='table table-sm table-bordered table-hover table-striped align-middle small'>";
             $html .= "<thead><tr>
                         <th>Fornecedor</th>
-                        <th>Quantidade</th>
+                        <th>Quantidade de Processos</th>
                         <th>Valor Total (R$)</th>
                         <th>Ticket Médio (R$)</th>
                         <th>% do Total</th>
@@ -276,6 +292,7 @@ class BIController extends Controller
                 $html .= "</tr>";
             }
         }
+
 
         $html .= "</tbody></table></div>";
 
