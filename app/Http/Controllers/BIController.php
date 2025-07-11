@@ -27,21 +27,18 @@ class BIController extends Controller
             ->where('company_group_id', $companyGroupId)
             ->pluck('pagante');
 
-        // Filtros principais (data e pagantes)
-        $query = DB::table('vendas')
-            ->whereIn('pagante', $pagantesDoGrupo);
-        
-        if ($request->filled('inicio')) {
-            $query->whereDate('data_venda', '>=', $request->inicio);
-        } else {
-            $query->whereDate('data_venda', '>=', CarbonDate::now()->subMonths(3)->startOfMonth());
-        }
+        $inicio = $request->filled('inicio')
+            ? CarbonDate::parse($request->inicio)->toDateString()
+            : now()->subMonths(3)->startOfMonth()->toDateString();
 
-        if ($request->filled('fim')) {
-            $query->whereDate('data_venda', '<=', $request->fim);
-        } else {
-            $query->whereDate('data_venda', '<=', CarbonDate::now()->endOfMonth());
-        }
+        $fim = $request->filled('fim')
+            ? CarbonDate::parse($request->fim)->toDateString()
+            : now()->endOfMonth()->toDateString();
+
+        $query = DB::table('vendas')
+            ->whereIn('pagante', $pagantesDoGrupo)
+            ->whereDate('data_venda', '>=', $inicio)   // ← aplica data inicial
+            ->whereDate('data_venda', '<=', $fim);    // ← aplica data final
 
         if ($request->filled('pagantes')) {
             $query->whereIn('pagante', $request->pagantes);
@@ -132,8 +129,8 @@ class BIController extends Controller
                 DB::raw('AVG(valor_total) as valor_medio')
             )
             ->whereIn('pagante', $pagantesDoGrupo)
-            ->when($request->inicio, fn($q) => $q->whereDate('data_venda', '>=', $request->inicio))
-            ->when($request->fim, fn($q) => $q->whereDate('data_venda', '<=', $request->fim))
+            ->whereDate('data_venda', '>=', $inicio)
+            ->whereDate('data_venda', '<=', $fim)
             ->groupBy('solicitante')
             ->get();
 

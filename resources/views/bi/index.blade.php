@@ -424,14 +424,33 @@
             dom: 'Bfrtip',
             buttons: [
                 { extend: 'copyHtml5', text: 'Copiar', className: 'btn btn-secondary', messageTop: mensagemTopo },
-                { extend: 'excelHtml5', text: 'Excel', className: 'btn btn-secondary', messageTop: mensagemTopo },
+                {
+                    extend: 'excelHtml5',
+                    text: 'Excel',
+                    className: 'btn btn-secondary',
+                    messageTop: mensagemTopo,
+                    exportOptions: {
+                        columns: ':visible',
+                        format: {
+                            body: function(data, row, column, node) {
+                                if (typeof data === 'string') {
+                                    // remove pontos de milhar
+                                    data = data.replace(/\./g, '');
+                                    // troca vírgula decimal por ponto
+                                    data = data.replace(',', '.');
+                                }
+                                return data;
+                            }
+                        }
+                    }
+                },
                 { extend: 'csvHtml5', text: 'CSV', className: 'btn btn-secondary', messageTop: mensagemTopo },
                 {
                     extend: 'pdfHtml5',
                     text: 'PDF',
                     className: 'btn btn-secondary',
                     messageTop: mensagemTopo,
-                    orientation: 'portrait',
+                    orientation: 'landscape',
                     pageSize: 'A4',
                     exportOptions: { columns: ':visible' }
                 },
@@ -440,7 +459,7 @@
             order: [[0, 'desc']]
         });
 
-        // Tabela de Solicitantes com ordenação na segunda coluna (índice 2)
+
         $('#tabelaSolicitantes').DataTable({
             order: [[2, 'desc']],
             responsive: true,
@@ -448,7 +467,24 @@
             dom: 'Bfrtip',
             buttons: [
                 { extend: 'copyHtml5', text: 'Copiar', className: 'btn btn-secondary', messageTop: mensagemTopo },
-                { extend: 'excelHtml5', text: 'Excel', className: 'btn btn-secondary', messageTop: mensagemTopo },
+                {
+                    extend: 'excelHtml5',
+                    text: 'Excel',
+                    className: 'btn btn-secondary',
+                    messageTop: mensagemTopo,
+                    exportOptions: {
+                        columns: ':visible',
+                        format: {
+                            body: function(data, row, column, node) {
+                                if (typeof data === 'string') {
+                                    data = data.replace(/\./g, '');  // remove pontos de milhar
+                                    data = data.replace(',', '.');   // troca vírgula decimal por ponto
+                                }
+                                return data;
+                            }
+                        }
+                    }
+                },
                 { extend: 'csvHtml5', text: 'CSV', className: 'btn btn-secondary', messageTop: mensagemTopo },
                 {
                     extend: 'pdfHtml5',
