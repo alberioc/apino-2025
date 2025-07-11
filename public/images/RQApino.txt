@@ -1,0 +1,79 @@
+{
+	"companyContext": {
+		"consolidator": {
+			"id": 26833
+		},
+		"travelAgency": {
+			"id": 26833
+		}
+	},
+	"airParameters": {
+		"groupingType": "recommendations",
+		"cityPairRequests": [{
+				"origin": "SAO",
+				"destination": "MIA",
+				"departureDate": {
+					"year": {{departureYear}},
+					"month": {{departureMonth}},
+					"day": {{departureDay}},
+					"hour": 0,
+					"minutes": 0,
+					"seconds": 0,
+					"millisecond": 0
+				},
+				"ciaCodes": [
+					
+				],
+				"cabin": "Economic",
+				"timeWindow": {
+					"min": 0,
+					"max": 0
+				},
+				"nonStop": false,
+				"baggageAllowance": "indifferent"
+			},
+			
+			{
+				"origin": "MIA",
+				"destination": "SAO",
+				"departureDate": {
+					"year": {{returnYear}},
+					"month": {{returnMonth}},
+					"day": {{returnDay}},
+					"hour": 0,
+					"minutes": 0,
+					"seconds": 0,
+					"millisecond": 0
+				},
+				"ciaCodes": [
+					
+				],
+				"cabin": "Economic",
+				"timeWindow": {
+					"min": 0,
+					"max": 0
+				},
+				"nonStop": false,
+				"baggageAllowance": "indifferent"
+			}
+		],
+        "maxFlightOptions": 2
+	},
+      "paginationParameters": {
+    "pageNumber": 1,
+    "itemsPerPage": 0
+  },
+	"sortParameters": {
+		"sortBy": "price",
+		"descending": false
+	},
+	"asynchronous": false,
+	"travellers": [{
+			"ageGroup": "adult",
+			"age": 1
+		}
+	],
+	"supplierSystems": [
+
+	]
+}

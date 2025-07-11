@@ -1,0 +1,2 @@
+{    "criteria": "(Created >= '2022-09-01 13:00:00' && Created <= '2022-09-30 23:00:00') && ServiceTypeName = 'Issue'"  //"criteria": "LastChangeDate >= '2020-11-19 15:00:00' && ServiceTypeName = 'ServiceOrder'"  //"criteria": "LastChangeDate >= '2021-03-21 15:00:00' && ServiceTypeName = 'Issue'"  // "sortFields": "id",   // "pagingPivotId": 3710   //"criteria": "id = 4384"   //"criteria": "id = 4871"
+}

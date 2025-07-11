@@ -1,0 +1,15 @@
+{
+  "name": "Laravel Codespace",
+  "image": "ghcr.io/devcontainers/php:8.2",
+  "features": {
+    "ghcr.io/devcontainers/features/php-extensions:1": {
+      "extensions": [
+        "bcmath",
+        "gd"
+      ]
+    },
+    "ghcr.io/devcontainers/features/composer:2": {}
+  },
+  "forwardPorts": [8000],
+  "postCreateCommand": "composer install || true"
+}

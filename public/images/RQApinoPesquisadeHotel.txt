@@ -1,0 +1,93 @@
+{
+
+    "companyContext": {
+
+        "consolidator": {
+
+            "id": 28396
+
+        },
+
+        "travelAgency": {
+
+            "id": 28396
+
+        }
+
+    },
+
+    "hotelParameters": {
+
+        "checkIn": {
+
+            "year": 2023,
+
+            "month": 10,
+
+            "day": 5,
+
+            "dayOfWeek": "sunday",
+
+            "hour": 0,
+
+            "minutes": 0,
+
+            "seconds": 0,
+
+            "millisecond": 0
+
+        },
+
+        "checkOut": {
+
+            "year": 2023,
+
+            "month": 10,
+
+            "day": 12,
+
+            "dayOfWeek": "sunday",
+
+            "hour": 0,
+
+            "minutes": 0,
+
+            "seconds": 0,
+
+            "millisecond": 0
+
+        },
+
+        "locationId": 258680
+
+    },
+
+    "paginationParameters": {
+
+        "pageNumber": 1,
+
+        "itemsPerPage": 1000
+
+    },
+
+    "sortParameters": {
+
+        "sortBy": "price",
+
+        "descending": true
+
+    },
+
+    "asynchronous": false,
+
+    "travellers": [{
+
+            "ageGroup": "adult",
+
+            "age": 30
+
+        }
+
+    ]
+
+}
